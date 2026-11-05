@@ -45,6 +45,7 @@ export async function mount(el, ctx) {
       const up = {}, k = push(ref(db, "transactions/" + r.uid)).key;
       up["transactions/" + r.uid + "/" + k] = { type: "deposit", amount: r.amount, note: (M[r.method] || r.method) + " " + r.trxId, ref: r.id, at: serverTimestamp() };
       up["deposits/" + r.id + "/processedBy"] = ctx.uid; up["deposits/" + r.id + "/processedAt"] = serverTimestamp();
+      up["user_requests/" + r.uid + "/" + r.id + "/status"] = "approved";
       ctx.addLog(up, "deposit_approve", uname(r) + " " + r.amount + " " + r.trxId);
       await update(ref(db), up); toast("ব্যালেন্স যোগ হয়েছে");
     } catch (e) { await set(ref(db, "deposits/" + r.id + "/status"), "pending").catch(() => {}); toast("হয়নি, আবার চেষ্টা করুন: " + (e.code || e.message), true); }
@@ -57,6 +58,7 @@ export async function mount(el, ctx) {
     const up = {}, b = (isDep ? "deposits/" : "withdrawals/") + r.id + "/";
     up[b + "reason"] = f.why.slice(0, 200); up[b + "processedBy"] = ctx.uid; up[b + "processedAt"] = serverTimestamp();
     if (isDep) up["trx_used/" + r.trxId] = null;
+    up["user_requests/" + r.uid + "/" + r.id + "/status"] = "rejected"; up["user_requests/" + r.uid + "/" + r.id + "/reason"] = f.why.slice(0, 200);
     ctx.addLog(up, isDep ? "deposit_reject" : "withdraw_reject", uname(r) + " " + r.amount + ": " + f.why);
     try { await update(ref(db), up); toast("বাতিল হয়েছে"); } catch (e) { toast("হয়নি: " + (e.code || e.message), true); }
   }
@@ -70,6 +72,7 @@ export async function mount(el, ctx) {
       const up = {}, k = push(ref(db, "transactions/" + r.uid)).key;
       up["transactions/" + r.uid + "/" + k] = { type: "withdraw", amount: -r.amount, note: (M[r.method] || r.method) + " " + r.number, ref: r.id, at: serverTimestamp() };
       up["withdrawals/" + r.id + "/processedBy"] = ctx.uid; up["withdrawals/" + r.id + "/processedAt"] = serverTimestamp();
+      up["user_requests/" + r.uid + "/" + r.id + "/status"] = "paid";
       ctx.addLog(up, "withdraw_paid", uname(r) + " " + r.amount + " " + r.number);
       await update(ref(db), up); toast("Paid হিসেবে চিহ্নিত");
     } catch (e) { await set(ref(db, "withdrawals/" + r.id + "/status"), "pending").catch(() => {}); toast("হয়নি: " + (e.code || e.message), true); }

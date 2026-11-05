@@ -12,6 +12,8 @@ export async function mount(el, ctx) {
   const stPill = s => `<span class="pill ${esc(s)}">${esc({ pending: "Pending", approved: "Available", reserved: "Reserved", sold: "Sold", rejected: "Rejected" }[s] || s)}</span>`;
   const chips = l => `<div class="chips"><span class="chip">${num(l.totalPlayers)} Players</span><span class="chip v">${num(l.epicPlayers)} Epic</span><span class="chip g">${num(l.totalManagers)} Mgr</span><span class="chip a">Std ${num(l.standardPlayers)}</span><span class="chip">Str ${num(l.collectiveStrength)}</span><span class="chip">${esc(ageText(l.idAgeMonths))}</span></div>`;
 
+  const uk = x => String(x.konamiUsername || "").trim().toLowerCase();
+  const dupCount = p => uk(p) ? [...pend, ...live].filter(x => x.id !== p.id && uk(x) === uk(p)).length : 0;
   /* ---------- pending ---------- */
   function renderPending() {
     $("#pc").textContent = pend.length ? "(" + pend.length + ")" : "";
@@ -19,7 +21,8 @@ export async function mount(el, ctx) {
     if (!pend.length) { body.innerHTML = '<div class="empty">কোনো অপেক্ষমান লিস্টিং নেই</div>'; return; }
     body.innerHTML = `<div class="list">${pend.map((p, i) => `<div class="item" style="animation-delay:${Math.min(i, 8) * 40}ms"><div class="grow">
       <h3>${esc(p.title)} — ${money(p.price)}</h3>
-      <div class="meta">বিক্রেতা: ${esc(p.sellerName)} · ${fmtDate(p.createdAt)} · ঢাকা: ${esc(p.maskedUsername)}</div>
+      <div class="meta">বিক্রেতা: ${esc(p.sellerName)} · ${fmtDate(p.createdAt)} · ইউজারনেম: <b>${esc(p.konamiUsername || p.maskedUsername || "-")}</b></div>
+      ${dupCount(p) ? `<div class="chips"><span class="chip r">এই ইউজারনেমে আরও ${dupCount(p)}টি লিস্টিং আছে</span></div>` : ""}
       ${chips(p)}
       <div class="thumbs">${toArr(p.images).map(safeImg).filter(Boolean).map(u => `<img src="${esc(u)}" data-zoom="${esc(u)}" alt="" loading="lazy">`).join("")}</div>
       ${p.description ? `<div class="meta" style="white-space:pre-wrap">${esc(p.description)}</div>` : ""}
@@ -30,9 +33,9 @@ export async function mount(el, ctx) {
     try {
       const v = (await get(ref(db, "listing_private/" + p.id))).val();
       if (!v) return toast("তথ্য পাওয়া যায়নি", true);
-      const m = modal("Konami তথ্য", `<dl class="kv"><dt>ইউজারনেম</dt><dd id="pu">${esc(v.konamiUsername)}</dd><dt>Konami ID</dt><dd id="pk">${esc(v.konamiId)}</dd><dt>ঢাকা (সাইটে)</dt><dd>${esc(p.maskedUsername)}</dd></dl>
+      const m = modal("Konami তথ্য", `<dl class="kv"><dt>ইউজারনেম</dt><dd id="pu">${esc(v.konamiUsername || p.konamiUsername || "-")}</dd><dt>Konami ID</dt><dd id="pk">${esc(v.konamiId)}</dd><dt>সাইটে দেখাচ্ছে</dt><dd>${esc(p.konamiUsername || p.maskedUsername || "-")}</dd></dl>
         <p class="msg" style="margin-top:12px">স্ক্রিনশটের সাথে মিলিয়ে দেখুন। এই তথ্য কাউকে দেবেন না।</p>`,
-        [{ label: "ইউজারনেম কপি", onClick: () => copy(v.konamiUsername) }, { label: "ID কপি", onClick: () => copy(v.konamiId) }, { label: "বন্ধ", cls: "primary", onClick: c => c() }]);
+        [{ label: "ইউজারনেম কপি", onClick: () => copy(v.konamiUsername || p.konamiUsername) }, { label: "ID কপি", onClick: () => copy(v.konamiId) }, { label: "বন্ধ", cls: "primary", onClick: c => c() }]);
     } catch (e) { toast("পড়া যায়নি: " + (e.code || e.message), true); }
   }
   async function approve(p) {
@@ -151,7 +154,7 @@ export async function mount(el, ctx) {
   }, e => { body.innerHTML = '<div class="empty">পড়া যায়নি: ' + esc(e.code || e.message) + "</div>"; });
   const o2 = onValue(ref(db, "listings"), s => {
     live = Object.entries(s.val() || {}).map(([id, v]) => ({ ...v, id })); sel = new Set([...sel].filter(id => live.some(l => l.id === id)));
-    if (tab === "live") renderLiveList();
+    if (tab === "live") renderLiveList(); else renderPending();
   });
   return () => { o1(); o2(); };
 }
