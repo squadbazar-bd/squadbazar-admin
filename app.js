@@ -5,6 +5,7 @@ const ROLES = { admin: "অ্যাডমিন", moderator: "মডারে�
 const NAV = [
   ["dashboard", "ড্যাশবোর্ড", ["admin", "moderator", "support"]],
   ["listings", "লিস্টিং", ["admin", "moderator"]],
+  ["deals", "ডিল", ["admin", "moderator"]],
   ["users", "ইউজার", ["admin", "moderator", "support"]],
   ["money", "টাকা", ["admin"]],
   ["support", "সাপোর্ট", ["admin", "moderator", "support"]],
@@ -68,6 +69,7 @@ function startApp(u, role) {
     } catch (e) { console.error(e); main.innerHTML = `<div class="empty">পেজ লোড হয়নি: ${esc(e.message)}</div>`; }
   };
   window.onhashchange = route; route();
+  import("./sweeper.js").then(m => m.startSweeper(ctx)).catch(() => {});
 }
 
 watch(async u => {

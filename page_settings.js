@@ -13,6 +13,7 @@ export async function mount(el, ctx) {
       <div class="card"><h2>সাধারণ</h2>
         <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">
           <div class="fld"><label>কমিশন (%)</label><input id="s_comm" type="number" min="0" max="50" step="0.5" value="${esc(val("commission"))}"></div>
+          <div class="fld"><label>বিক্রেতার সাড়া দেওয়ার সময় (ঘণ্টা)</label><input id="s_dh" type="number" min="1" max="168" value="${esc(val("dealHours", 24))}"></div>
           <div class="fld"><label>সর্বনিম্ন ডিপোজিট (৳)</label><input id="s_mind" type="number" min="0" value="${esc(val("limits/minDeposit"))}"></div>
           <div class="fld"><label>সর্বনিম্ন উইথড্র (৳)</label><input id="s_minw" type="number" min="0" value="${esc(val("limits/minWithdraw"))}"></div>
           <div class="fld"><label>WhatsApp লিংক</label><input id="s_wa" value="${esc(val("support/whatsapp"))}" placeholder="https://wa.me/8801..."></div>
@@ -34,7 +35,7 @@ export async function mount(el, ctx) {
         <div class="list">${keys.length ? keys.map(k => `<div class="item" data-id="${esc(k.id)}" style="align-items:center"><div class="grow"><h3>${esc(k.label || "কী")} <span class="pill ${k.active === false ? "rejected" : "approved"}">${k.active === false ? "বন্ধ" : "সক্রিয়"}</span></h3><div class="meta">${esc(mask(k.key || ""))}</div></div>
           <div class="acts" style="margin:0"><button class="btn sm" data-a="test">টেস্ট</button><button class="btn sm" data-a="tog">${k.active === false ? "চালু" : "বন্ধ"}</button><button class="btn sm danger" data-a="del">মুছুন</button></div></div>`).join("") : '<div class="empty">কোনো কী নেই। ছবি আপলোড কাজ করবে না।</div>'}</div></div>`;
     rendered = true;
-    $("#sv1").onclick = () => save({ "commission": numOrNull("#s_comm"), "limits/minDeposit": numOrNull("#s_mind"), "limits/minWithdraw": numOrNull("#s_minw"),
+    $("#sv1").onclick = () => save({ "commission": numOrNull("#s_comm"), "dealHours": numOrNull("#s_dh") || 24, "limits/minDeposit": numOrNull("#s_mind"), "limits/minWithdraw": numOrNull("#s_minw"),
       "support/whatsapp": $("#s_wa").value.trim() || null, "support/telegram": $("#s_tg").value.trim() || null,
       "maintenance": { on: $("#s_mon").checked, message: $("#s_mmsg").value.trim().slice(0, 200) } }, "settings_general");
     $("#sv2").onclick = () => save({ "payment/bkash": $("#p_bk").value.trim() || null, "payment/nagad": $("#p_ng").value.trim() || null, "payment/rocket": $("#p_rk").value.trim() || null }, "settings_payment");
@@ -80,7 +81,7 @@ export async function mount(el, ctx) {
     if (!rendered || sig !== lastKeys) { lastKeys = sig; if (!rendered) render(); else renderKeysOnly(); }
   }, e => { el.innerHTML = '<div class="empty">পড়া যায়নি: ' + esc(e.code || e.message) + "</div>"; });
   function renderKeysOnly() { const keep = collect(); render(); restore(keep); }
-  function collect() { return ["s_comm", "s_mind", "s_minw", "s_wa", "s_tg", "s_mmsg", "p_bk", "p_ng", "p_rk"].map(i => $("#" + i).value).concat($("#s_mon").checked); }
-  function restore(v) { ["s_comm", "s_mind", "s_minw", "s_wa", "s_tg", "s_mmsg", "p_bk", "p_ng", "p_rk"].forEach((i, n) => $("#" + i).value = v[n]); $("#s_mon").checked = v[9]; }
+  function collect() { return ["s_comm", "s_dh", "s_mind", "s_minw", "s_wa", "s_tg", "s_mmsg", "p_bk", "p_ng", "p_rk"].map(i => $("#" + i).value).concat($("#s_mon").checked); }
+  function restore(v) { ["s_comm", "s_dh", "s_mind", "s_minw", "s_wa", "s_tg", "s_mmsg", "p_bk", "p_ng", "p_rk"].forEach((i, n) => $("#" + i).value = v[n]); $("#s_mon").checked = v[10]; }
   return off;
 }

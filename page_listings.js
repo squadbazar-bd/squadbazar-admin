@@ -26,16 +26,19 @@ export async function mount(el, ctx) {
       ${chips(p)}
       <div class="thumbs">${toArr(p.images).map(safeImg).filter(Boolean).map(u => `<img src="${esc(u)}" data-zoom="${esc(u)}" alt="" loading="lazy">`).join("")}</div>
       ${p.description ? `<div class="meta" style="white-space:pre-wrap">${esc(p.description)}</div>` : ""}
-      <div class="acts" data-id="${esc(p.id)}"><button class="btn sm" data-a="priv">Konami তথ্য</button><button class="btn sm good" data-a="approve">Approve</button><button class="btn sm danger" data-a="reject">Reject</button></div>
+      <div class="acts" data-id="${esc(p.id)}"><button class="btn sm" data-a="priv">বিক্রেতার ফোন</button><button class="btn sm good" data-a="approve">Approve</button><button class="btn sm danger" data-a="reject">Reject</button></div>
     </div></div>`).join("")}</div>`;
   }
   async function showPrivate(p) {
     try {
       const v = (await get(ref(db, "listing_private/" + p.id))).val();
       if (!v) return toast("তথ্য পাওয়া যায়নি", true);
-      const m = modal("Konami তথ্য", `<dl class="kv"><dt>ইউজারনেম</dt><dd id="pu">${esc(v.konamiUsername || p.konamiUsername || "-")}</dd><dt>Konami ID</dt><dd id="pk">${esc(v.konamiId)}</dd><dt>সাইটে দেখাচ্ছে</dt><dd>${esc(p.konamiUsername || p.maskedUsername || "-")}</dd></dl>
-        <p class="msg" style="margin-top:12px">স্ক্রিনশটের সাথে মিলিয়ে দেখুন। এই তথ্য কাউকে দেবেন না।</p>`,
-        [{ label: "ইউজারনেম কপি", onClick: () => copy(v.konamiUsername || p.konamiUsername) }, { label: "ID কপি", onClick: () => copy(v.konamiId) }, { label: "বন্ধ", cls: "primary", onClick: c => c() }]);
+      const ph = String(v.phone || "").replace(/\D/g, ""), intl = ph.startsWith("88") ? ph : "88" + ph;
+      modal("বিক্রেতার ফোন", `<dl class="kv"><dt>ইউজারনেম</dt><dd>${esc(p.konamiUsername || p.maskedUsername || "-")}</dd></dl>
+        <div class="paybox2"><div class="meta">ফোন নম্বর</div><div class="phone">${esc(v.phone || v.konamiId || "-")}</div>
+        <div class="acts"><a class="btn sm good" href="tel:${esc(v.phone || "")}">📞 কল</a><a class="btn sm" target="_blank" rel="noopener" href="https://wa.me/${esc(intl)}">WhatsApp</a></div></div>
+        <p class="msg" style="margin-top:12px">স্ক্রিনশটের সাথে ইউজারনেম মিলিয়ে দেখুন। এই নম্বর কাউকে দেবেন না।</p>`,
+        [{ label: "নম্বর কপি", onClick: () => copy(v.phone || "") }, { label: "বন্ধ", cls: "primary", onClick: c => c() }]);
     } catch (e) { toast("পড়া যায়নি: " + (e.code || e.message), true); }
   }
   async function approve(p) {

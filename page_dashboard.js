@@ -9,6 +9,9 @@ export async function mount(el, ctx) {
     { id: "lv", label: "চালু লিস্টিং", href: "listings", src: ref(db, "listings"), fn: s => Object.values(s.val() || {}).filter(l => l.status === "approved").length, roles: ["admin", "moderator"] },
     { id: "us", label: "মোট ইউজার", href: "users", src: ref(db, "users"), fn: count, roles: ["admin", "moderator", "support"] },
     { id: "ub", label: "ইউজারদের মোট ব্যালেন্স", href: "users", src: ref(db, "users"), fn: s => money(Object.values(s.val() || {}).reduce((a, u) => a + num(u.balance), 0)), roles: ["admin"] },
+    { id: "dr", label: "নতুন ডিল অনুরোধ", href: "deals", src: ref(db, "deals"), fn: s => Object.values(s.val() || {}).filter(x => x.status === "requested").length, alert: true, roles: ["admin", "moderator"] },
+    { id: "da", label: "চলমান ডিল", href: "deals", src: ref(db, "deals"), fn: s => Object.values(s.val() || {}).filter(x => ["held", "delivered", "confirmed"].includes(x.status)).length, roles: ["admin", "moderator"] },
+    { id: "dd", label: "বিরোধ / রিফান্ড চাওয়া", href: "deals", src: ref(db, "deals"), fn: s => Object.values(s.val() || {}).filter(x => x.status === "disputed" || (x.status === "held" && x.refundRequested)).length, alert: true, roles: ["admin", "moderator"] },
     { id: "dp", label: "Pending ডিপোজিট", href: "money", src: q("deposits", "pending"), fn: count, alert: true, roles: ["admin"] },
     { id: "wd", label: "Pending উইথড্র", href: "money", src: q("withdrawals", "pending"), fn: count, alert: true, roles: ["admin"] },
     { id: "tk", label: "খোলা টিকিট", href: "support", src: q("tickets", "open"), fn: count, alert: true, roles: ["admin", "moderator", "support"] }
