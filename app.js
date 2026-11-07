@@ -8,6 +8,7 @@ const NAV = [
   ["deals", "ডিল", ["admin", "moderator"]],
   ["users", "ইউজার", ["admin", "moderator", "support"]],
   ["money", "টাকা", ["admin"]],
+  ["ads", "প্রচার", ["admin"]],
   ["support", "সাপোর্ট", ["admin", "moderator", "support"]],
   ["content", "কনটেন্ট", ["admin"]],
   ["settings", "সেটিংস", ["admin"]],

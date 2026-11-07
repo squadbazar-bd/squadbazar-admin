@@ -79,7 +79,7 @@ export async function mount(el, ctx) {
     $("#selc").textContent = sel.size;
     document.querySelectorAll("[data-bulk]").forEach(b => b.disabled = !sel.size);
     box.innerHTML = a.length ? a.map((l, i) => `<label class="item" style="animation-delay:${Math.min(i, 8) * 30}ms;align-items:center"><input type="checkbox" style="width:18px;height:18px" data-sel="${esc(l.id)}" ${sel.has(l.id) ? "checked" : ""}>
-      <div class="grow"><h3>${esc(l.title)} ${stPill(l.status)} ${l.featured ? '<span class="chip v">Featured</span>' : ""} ${l.sellerVerified ? '<span class="chip g">Verified</span>' : ""}</h3>
+      <div class="grow"><h3>${esc(l.title)} ${stPill(l.status)} ${l.featured ? '<span class="chip v">Featured</span>' : ""} ${l.sellerVerified ? '<span class="chip g">Verified</span>' : ""} ${l.hidden ? '<span class="chip a">লুকানো</span>' : ""}</h3>
       <div class="meta">${disc(l) ? `<s>${money(l.price)}</s> <b>${money(l.discountPrice)}</b>` : `<b>${money(l.price)}</b>`} · ${esc(l.sellerName || "-")} · ${num(l.epicPlayers)} Epic · Str ${num(l.collectiveStrength)}</div></div>
       <div class="acts" style="margin:0" data-id="${esc(l.id)}"><button type="button" class="btn sm" data-a="edit">এডিট</button><button type="button" class="btn sm danger" data-a="del">মুছুন</button></div></label>`).join("")
       : '<div class="empty">কিছু পাওয়া যায়নি</div>';
@@ -101,13 +101,14 @@ export async function mount(el, ctx) {
       { id: "disc", label: "ছাড়ের দাম (ফাঁকা = ছাড় নেই)", type: "number", value: l.discountPrice || "" },
       { id: "status", label: "অবস্থা", type: "select", value: l.status, options: [{ v: "approved", l: "Available" }, { v: "reserved", l: "Reserved" }, { v: "sold", l: "Sold" }] },
       { id: "feat", label: "Featured", type: "checkbox", value: !!l.featured },
-      { id: "ver", label: "Verified seller", type: "checkbox", value: !!l.sellerVerified }] });
+      { id: "ver", label: "Verified seller", type: "checkbox", value: !!l.sellerVerified },
+      { id: "hid", label: "লুকানো (সাইটে দেখাবে না)", type: "checkbox", value: !!l.hidden }] });
     if (!f) return;
     if (f.title.length < 3 || f.price < 50) return toast("টাইটেল (৩+ অক্ষর) বা দাম (৫০+) ঠিক নেই", true);
     const b = "listings/" + l.id + "/", up = {};
     up[b + "title"] = f.title.slice(0, 80); up[b + "price"] = f.price;
     up[b + "discountPrice"] = (f.disc && f.disc < f.price) ? f.disc : null;
-    up[b + "status"] = f.status; up[b + "featured"] = f.feat; up[b + "sellerVerified"] = f.ver;
+    up[b + "status"] = f.status; up[b + "featured"] = f.feat; up[b + "sellerVerified"] = f.ver; up[b + "hidden"] = f.hid;
     if (l.sellerId) { const u = "user_listings/" + l.sellerId + "/" + l.id + "/"; up[u + "status"] = f.status; up[u + "price"] = f.price; up[u + "title"] = f.title.slice(0, 80); }
     ctx.addLog(up, "listing_edit", f.title + " [" + l.id + "]");
     try { await update(ref(db), up); toast("সেভ হয়েছে"); } catch (e) { toast("হয়নি: " + (e.code || e.message), true); }

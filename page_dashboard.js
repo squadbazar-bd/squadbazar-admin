@@ -12,6 +12,7 @@ export async function mount(el, ctx) {
     { id: "dr", label: "নতুন ডিল অনুরোধ", href: "deals", src: ref(db, "deals"), fn: s => Object.values(s.val() || {}).filter(x => x.status === "requested").length, alert: true, roles: ["admin", "moderator"] },
     { id: "da", label: "চলমান ডিল", href: "deals", src: ref(db, "deals"), fn: s => Object.values(s.val() || {}).filter(x => ["held", "delivered", "confirmed"].includes(x.status)).length, roles: ["admin", "moderator"] },
     { id: "dd", label: "বিরোধ / রিফান্ড চাওয়া", href: "deals", src: ref(db, "deals"), fn: s => Object.values(s.val() || {}).filter(x => x.status === "disputed" || (x.status === "held" && x.refundRequested)).length, alert: true, roles: ["admin", "moderator"] },
+    { id: "ad", label: "চালু প্রচার (Ads)", href: "ads", src: ref(db, "ads"), fn: s => Object.values(s.val() || {}).filter(a => !a.stopped && a.endAt > Date.now()).length, roles: ["admin"] },
     { id: "dp", label: "Pending ডিপোজিট", href: "money", src: q("deposits", "pending"), fn: count, alert: true, roles: ["admin"] },
     { id: "wd", label: "Pending উইথড্র", href: "money", src: q("withdrawals", "pending"), fn: count, alert: true, roles: ["admin"] },
     { id: "tk", label: "খোলা টিকিট", href: "support", src: q("tickets", "open"), fn: count, alert: true, roles: ["admin", "moderator", "support"] }
